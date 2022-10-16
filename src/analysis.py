@@ -5,35 +5,40 @@ import statistics
 
 
 def calculate_frequencies(row,
-                        number_of_frequencies,
-                        distance_pixel):
+                          number_of_frequencies,
+                          micrometers_per_pixel):
     '''
     Calculate fourier transform of image row.
     Args:
         row: <array> pixel values for image row
         number_of_frequencies: <int> number of peaks to pull from fourier transform (number
                     of periods to analyse)
-        distance_pixel: <float> distance in um per pixel
+        micrometers_per_pixel: <float> distance in um per pixel
     Returns:
         frequencies: <array> fourier space frequency values of period peaks
         periods: <array> signal periods from fourier transform converted from um
                     to nm
     '''
-    samplesize = len(row)
-    xspace = range(0, samplesize, 1)
-    fspace = np.fft.rfftfreq(len(xspace), 1)
-    fft = np.fft.rfft(row)
-    magnitude = np.abs(fft)
-    peaks, _ = sig.find_peaks(x=magnitude)
+    frequency_intensities = np.fft.rfft(row)
+    absolute_frequency_intensities = np.abs(frequency_intensities)
+
+    peak_locations, _ = sig.find_peaks(x=absolute_frequency_intensities)
     prominences, _, _ = sig.peak_prominences(
-        x=magnitude,
-        peaks=peaks)
-    indices = np.array(np.argsort(prominences)[-number_of_frequencies:][::-1])
-    periodpeaks = peaks[indices]
-    fsteps = [p / (distance_pixel * samplesize) for p in periodpeaks]
-    periods = [(1 / f) * 1E3 for f in fsteps]
-    frequencies = fspace[indices]
+        x=absolute_frequency_intensities,
+        peaks=peak_locations)
+    locations_sorted_by_prominence = np.array(
+        np.argsort(prominences)[-number_of_frequencies:][::-1])
+    selected_peak_locations = peak_locations[locations_sorted_by_prominence]
+
+    samplesize = len(row)
+    frequency_coordinates = np.fft.rfftfreq(samplesize, 1)
+    frequencies = frequency_coordinates[locations_sorted_by_prominence]
+
+    frequency_steps = [p / (micrometers_per_pixel * samplesize) for p in selected_peak_locations]
+    periods = [(1 / f) * 1E3 for f in frequency_steps]
+
     return frequencies, periods
+
 
 def StandardDeviation(x):
     '''
@@ -97,6 +102,7 @@ def calculate_distanceperpixel(distance_value, distance_unit, number_of_pixels):
     scalar = unit_scalar_map[distance_unit]
     distanceperpixel = (distance_value * scalar) / int(number_of_pixels)
     return distanceperpixel
+
 
 def trim_to_region_of_interest(image,
                                height,

@@ -45,7 +45,7 @@ if __name__ == '__main__':
             fourierfrequencies, fourierperiods = anal.calculate_frequencies(
                 row=row,
                 number_of_frequencies=3,
-                distance_pixel=distanceperpixel)
+                micrometers_per_pixel=distanceperpixel)
             periods.append(fourierperiods)
             frequencies.append(fourierfrequencies)
 
