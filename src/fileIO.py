@@ -15,7 +15,9 @@ def read_sem_log(file_path):
     with open(file_path) as infile:
         raw_lines = infile.readlines()
     sanitized_lines = remove_unwanted_characters(raw_lines)
-    return extract_parameters(lines=sanitized_lines)
+    JEOL_parameters = lines_to_parameters(sanitized_lines)
+    sanitized_parameters = sanitize_JEOL_parameters(JEOL_parameters)
+    return sanitized_parameters
 
 
 def remove_unwanted_characters(raw_lines):
@@ -28,33 +30,43 @@ def remove_unwanted_characters(raw_lines):
     return lines
 
 
-def extract_parameters(lines):
+def lines_to_parameters(lines):
     '''
-    Pull important parameters into dictionary. To further add parameters, simply add names and keys to the
-    sample dictionary in this function. Remember FULL_SIZE parameter is [width,
-    height].
+    Pull important parameters into dictionary. 
+    To further add parameters, simply add names and keys to the sample dictionary in this function. 
+    Remember FULL_SIZE parameter is [width, height].
 
     Args:
         lines: <array> array of lines from txt file, stripped of '$' and '\n'
     Returns:
         parameterdict: <dict> parameter dictionary
     '''
-    parameters = {
-        'CM_ACCEL_VOLT': None,
-        'CM_BRIGHTNESS': None,
-        'CM_CONTRAST': None,
-        'CM_FULL_SIZE': None,
-        'CM_MAG': None,
-        'SM_EMI_CURRENT': None,
-        'SM_MICRON_BAR': None,
-        'SM_MICRON_MARKER': None,
-        'SM_WD': None,
-    }
+    parameters = dict()
     for line in lines:
         parameter_label, *parameter_values = line.split(' ')
-        if parameter_label in parameters.keys():
-            parameters[parameter_label] = parameter_values
+        parameters[parameter_label] = parameter_values
     return parameters
+
+
+def sanitize_JEOL_parameters(raw_parameters):
+
+    parameter_map = {
+        'CM_ACCEL_VOLT': 'acceleration_voltage',
+        'CM_BRIGHTNESS': 'brightness',
+        'CM_CONTRAST': 'contrast',
+        'CM_MAG': 'magnification',
+        'SM_EMI_CURRENT': 'emission_current',
+        'SM_MICRON_BAR': 'calibration_number_of_pixels',
+        'SM_MICRON_MARKER': 'calibration_distance',
+        'SM_WD': 'working_distance',
+    }
+    sanitized_parameters = dict()
+    for key, value in parameter_map.items():
+        sanitized_parameters[value] = raw_parameters[key]
+
+    # CM_FULL_SIZE is [width, height].
+    sanitized_parameters['width'], sanitized_parameters['height'] = raw_parameters['CM_FULL_SIZE']
+    return sanitized_parameters
 
 
 def read_image(file_path):
