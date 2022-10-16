@@ -53,10 +53,10 @@ def OpenImgFile(file_path):
     Args:
         file_path: <string> path to file
     Returns:
-        image: <object> image file for PIL
+        image: <np.array> array of pixels
     '''
     image = Image.open(file_path)
-    return image
+    return np.array(image)
 
 def saveJson(out_path,
             dictionary):

@@ -19,9 +19,8 @@ def ImageRegionInterest(image,
         pixels: <array> pixel array of image
         regionofinterest: <array> trimmed pixel array to region of interest
     '''
-    pixels = np.array(image)
-    regionofinterest = pixels[0: height, 0: width]
-    return pixels, regionofinterest
+    regionofinterest = image[0: height, 0: width]
+    return regionofinterest
 
 
 def DistPix(marker,
@@ -139,7 +138,7 @@ if __name__ == '__main__':
 
             image = fileIO.OpenImgFile(file_path=imagepath)
 
-            pixels, roi = ImageRegionInterest(
+            roi = ImageRegionInterest(
                 image=image,
                 height=int(semParameters['CM_FULL_SIZE'][1]),
                 width=int(semParameters['CM_FULL_SIZE'][0]))
