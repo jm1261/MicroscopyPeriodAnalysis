@@ -112,7 +112,7 @@ def convert(o):
     raise TypeError
 
 
-def JsonOut(out_path,
+def saveJson(out_path,
             dictionary):
     '''
     Save dictionary to json file.

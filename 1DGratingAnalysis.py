@@ -6,7 +6,7 @@ import Functions.Organisation as org
 from PIL import Image
 
 
-def ReadTxtFile(file_path):
+def readSemLog(file_path):
     '''
     Read .txt file output from SEM image output. Removes $ and \n characters
     from line.
@@ -180,35 +180,40 @@ if __name__ == '__main__':
         image_string='.bmp')
 
     for file in txtfiles:
+
         if f'{file[0: -4]}.bmp' in imagefiles:
             print(file)
             txtpath = os.path.join(
                 dirpath,
                 file)
-            lines = ReadTxtFile(file_path=txtpath)
-            parameterdict = SEMDict(lines=lines)
+            lines = readSemLog(file_path=txtpath)
+            semParameters = SEMDict(lines=lines)
+
             imagepath = os.path.join(
                 dirpath,
                 f'{file[0: -4]}.bmp')
             image = OpenImgFile(file_path=imagepath)
+
             pixels, roi = ImageRegionInterest(
                 image=image,
-                height=int(parameterdict['CM_FULL_SIZE'][1]),
-                width=int(parameterdict['CM_FULL_SIZE'][0]))
-            distperpixel = DistPix(
-                marker=parameterdict['SM_MICRON_MARKER'][0],
-                bar=parameterdict['SM_MICRON_BAR'][0])
+                height=int(semParameters['CM_FULL_SIZE'][1]),
+                width=int(semParameters['CM_FULL_SIZE'][0]))
+            distanceperpixel = DistPix(
+                marker=semParameters['SM_MICRON_MARKER'][0],
+                bar=semParameters['SM_MICRON_BAR'][0])
+
             periods = []
             frequencies = []
             for i in range(len(roi)):
                 fourierfrequencies, fourierperiods = FourierTransformRow(
                     row=roi[i],
                     num_peaks=3,
-                    distance_pixel=distperpixel)
+                    distance_pixel=distanceperpixel)
                 periods.append(fourierperiods)
                 frequencies.append(fourierfrequencies)
-            resultsdict = AddDictKeys(
-                primary_dict=parameterdict,
+
+            calculatedGratingProperties = AddDictKeys(
+                primary_dict=semParameters,
                 secondary_dict={
                     'Average_Periods_nm': [
                         np.sum(p) / len(p)
@@ -222,11 +227,12 @@ if __name__ == '__main__':
                     'Frequencies_Errors': [
                         math.StandardErrorMean(x=f)
                         for f in np.array(frequencies).T]})
-            org.JsonOut(
+
+            org.saveJson(
                 out_path=os.path.join(
                     dirpath,
                     f'{file[0: -4]}_Results.csv'),
-                dictionary=resultsdict)
+                dictionary=calculatedGratingProperties)
 
         else:
             pass
