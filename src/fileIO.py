@@ -65,7 +65,7 @@ def read_image(file_path):
     image = Image.open(file_path)
     return np.array(image)
 
-def saveJson(out_path,
+def save_json(out_path,
             dictionary):
     '''
     Save dictionary to json file.
@@ -82,7 +82,6 @@ def saveJson(out_path,
             indent=2,
             default=convert)
         outfile.write('\n')
-
 
 def convert(o):
     '''

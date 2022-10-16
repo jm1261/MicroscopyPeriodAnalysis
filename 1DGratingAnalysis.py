@@ -171,7 +171,7 @@ if __name__ == '__main__':
                         math.StandardErrorMean(x=f)
                         for f in np.array(frequencies).T]})
 
-            fileIO.saveJson(
+            fileIO.save_json(
                 out_path=os.path.join(
                     dirpath,
                     f'{file[0: -4]}_Results.json'),
