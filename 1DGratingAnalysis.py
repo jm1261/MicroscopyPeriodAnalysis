@@ -139,11 +139,11 @@ if __name__ == '__main__':
 
             grating_region = trim_to_region_of_interest(
                 image=image,
-                height=int(semParameters['height']),
-                width=int(semParameters['width']))
+                height=semParameters['image_height'],
+                width=semParameters['image_width'])
             distanceperpixel = DistPix(
-                marker=semParameters['calibration_distance'][0],
-                bar=semParameters['calibration_number_of_pixels'][0])
+                marker=semParameters['calibration_distance'],
+                bar=semParameters['calibration_number_of_pixels'])
 
             periods = []
             frequencies = []

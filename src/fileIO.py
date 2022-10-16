@@ -34,7 +34,6 @@ def lines_to_parameters(lines):
     '''
     Pull important parameters into dictionary. 
     To further add parameters, simply add names and keys to the sample dictionary in this function. 
-    Remember FULL_SIZE parameter is [width, height].
 
     Args:
         lines: <array> array of lines from txt file, stripped of '$' and '\n'
@@ -43,29 +42,29 @@ def lines_to_parameters(lines):
     '''
     parameters = dict()
     for line in lines:
-        parameter_label, *parameter_values = line.split(' ')
+        parameter_label, *parameter_values = line.strip().split(' ')
         parameters[parameter_label] = parameter_values
     return parameters
 
 
 def sanitize_JEOL_parameters(raw_parameters):
-
-    parameter_map = {
-        'CM_ACCEL_VOLT': 'acceleration_voltage',
-        'CM_BRIGHTNESS': 'brightness',
-        'CM_CONTRAST': 'contrast',
-        'CM_MAG': 'magnification',
-        'SM_EMI_CURRENT': 'emission_current',
-        'SM_MICRON_BAR': 'calibration_number_of_pixels',
-        'SM_MICRON_MARKER': 'calibration_distance',
-        'SM_WD': 'working_distance',
+    sanitized_parameters = {
+        'acceleration_voltage': float(raw_parameters['CM_ACCEL_VOLT'][0]),
+        'brightness': int(raw_parameters['CM_BRIGHTNESS'][0]),
+        'calibration_distance': raw_parameters['SM_MICRON_MARKER'][0],
+        'calibration_number_of_pixels': int(raw_parameters['SM_MICRON_BAR'][0]),
+        'contrast': int(raw_parameters['CM_CONTRAST'][0]),
+        'emission_current': float(raw_parameters['SM_EMI_CURRENT'][0]),
+        'magnification': int(raw_parameters['CM_MAG'][0]),
+        'working_distance': float(raw_parameters['SM_WD'][0]),
     }
-    sanitized_parameters = dict()
-    for key, value in parameter_map.items():
-        sanitized_parameters[value] = raw_parameters[key]
 
     # CM_FULL_SIZE is [width, height].
-    sanitized_parameters['width'], sanitized_parameters['height'] = raw_parameters['CM_FULL_SIZE']
+    width = 0
+    height = 1
+    sanitized_parameters['image_width'] = int(raw_parameters['CM_FULL_SIZE'][width])
+    sanitized_parameters['image_height'] = int(raw_parameters['CM_FULL_SIZE'][height])
+
     return sanitized_parameters
 
 
