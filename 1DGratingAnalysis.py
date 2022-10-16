@@ -135,7 +135,7 @@ if __name__ == '__main__':
                 dirpath,
                 f'{file[0: -4]}.bmp')
 
-            image = fileIO.OpenImgFile(file_path=imagepath)
+            image = fileIO.read_image(file_path=imagepath)
 
             grating_region = ImageRegionInterest(
                 image=image,

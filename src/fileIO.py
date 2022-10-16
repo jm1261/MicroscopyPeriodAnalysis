@@ -54,7 +54,7 @@ def extract_parameters(lines):
             parameters[parameter_label] = parameter_values
     return parameters
 
-def OpenImgFile(file_path):
+def read_image(file_path):
     '''
     Loads image file.
     Args:
