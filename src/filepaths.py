@@ -1,11 +1,9 @@
-import os
 from pathlib import Path
 
 
 def get_working_directory(subdirectory='TestImages'):
-    current_directory = os.getcwd()
-    working_directory = os.path.join(
-        current_directory, subdirectory)
+    current_directory = Path('.')
+    working_directory = current_directory/subdirectory
     return working_directory
 
 
@@ -26,10 +24,9 @@ def FindDirFile(working_directory,
         imagefiles: <arrau> array of all files within directory with image_
                     string in file name
     '''
-    working_path = Path(working_directory)
 
-    logfile_paths = sorted(working_path.glob(f'*{log_extension}'))
-    image_paths = sorted(working_path.glob(f'*{image_extension}'))
+    logfile_paths = sorted(working_directory.glob(f'*{log_extension}'))
+    image_paths = sorted(working_directory.glob(f'*{image_extension}'))
 
     return [{
                 'filename': logfile_path.stem,
