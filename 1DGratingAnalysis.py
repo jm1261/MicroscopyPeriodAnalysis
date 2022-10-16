@@ -2,25 +2,21 @@ import os
 import numpy as np
 import Functions.Organisation as org
 
-import src.fileIO as fileIO
 import src.analysis as anal
+import src.fileIO as fileIO
+import src.filepaths as filepaths
 import src.gui as gui
 
 if __name__ == '__main__':
 
-    ''' Organisation '''
-    root = os.getcwd()
-    rootpath = os.path.join(
-        root,
-        'TestImage')
-
-    dirpath = gui.prompt_for_path(
-        default=rootpath,
+    working_directory = filepaths.get_working_directory()
+    working_directory = gui.prompt_for_path(
+        default=working_directory,
         title='Select Target Directory',
         dir_path=True)
 
     txtfiles, imagefiles = org.FindDirFile(
-        dir_path=dirpath,
+        dir_path=working_directory,
         file_string='.txt',
         image_string='.bmp')
 
@@ -29,13 +25,13 @@ if __name__ == '__main__':
         if f'{file[0: -4]}.bmp' in imagefiles:
             print(file)
             txtpath = os.path.join(
-                dirpath,
+                working_directory,
                 file)
 
             sem_parameters = fileIO.read_sem_log(file_path=txtpath)
 
             imagepath = os.path.join(
-                dirpath,
+                working_directory,
                 f'{file[0: -4]}.bmp')
 
             image = fileIO.read_image(file_path=imagepath)
@@ -79,7 +75,7 @@ if __name__ == '__main__':
 
             fileIO.save_json(
                 out_path=os.path.join(
-                    dirpath,
+                    working_directory,
                     f'{file[0: -4]}_Results.json'),
                 dictionary=calculated_grating_properties)
 
