@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 
 def get_working_directory(subdirectory='TestImages'):
@@ -8,9 +9,9 @@ def get_working_directory(subdirectory='TestImages'):
     return working_directory
 
 
-def FindDirFile(dir_path,
-                file_string,
-                image_string):
+def FindDirFile(working_directory,
+                log_extension,
+                image_extension):
     '''
     Find files in target directory. Creates two arrays, data files and plotted
     files. Find files searches for target strings in directory, namely file
@@ -25,48 +26,14 @@ def FindDirFile(dir_path,
         imagefiles: <arrau> array of all files within directory with image_
                     string in file name
     '''
-    datafiles = ExtractFile(
-        dir_path=dir_path,
-        file_string=file_string)
-    plotfiles = ExtractFile(
-        dir_path=dir_path,
-        file_string=image_string)
-    return datafiles, plotfiles
+    working_path = Path(working_directory)
 
+    logfile_paths = sorted(working_path.glob(f'*{log_extension}'))
+    image_paths = sorted(working_path.glob(f'*{image_extension}'))
 
-def ExtractFile(dir_path,
-                file_string):
-    '''
-    Stack file names in a directory into an array. Returns data files array
-    if file_string in file names.
-    Args:
-        dir_path: <string> path to directory
-        file_string: <string> string within desired file names
-    Returns:
-        array: <array> array of sorted and selected file names
-    '''
-    dirlist = FileSort(dir_path=dir_path)
-    return [file for file in dirlist if file_string in file]
-
-
-def FileSort(dir_path):
-    '''
-    Numerically sort a directory containing a combination of string file names
-    and numerical file names.
-    Args:
-        dir_path: <string> path to directory
-    Returns:
-        sorted_array: <array> contents of dir_path sorted numerically
-    '''
-    return sorted(os.listdir(dir_path))
-
-
-def GetFilename(file_path):
-    '''
-    Split file path to obtain only filename without extension.
-    Args:
-        file_path: <string> path to file
-    Returns:
-        file_name: <string> file name string without path or extension
-    '''
-    return os.path.splitext(os.path.basename(file_path))[0]
+    return [{
+                'filename': logfile_path.stem,
+                'logfile_path': logfile_path,
+                'image_path': image_path,
+            } for logfile_path, image_path in zip(logfile_paths, image_paths)
+        if logfile_path.stem == image_path.stem]

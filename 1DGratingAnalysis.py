@@ -14,69 +14,60 @@ if __name__ == '__main__':
         title='Select Target Directory',
         dir_path=True)
 
-    txtfiles, imagefiles = filepaths.FindDirFile(
-        dir_path=working_directory,
-        file_string='.txt',
-        image_string='.bmp')
+    all_sem_filepaths = filepaths.FindDirFile(
+        working_directory=working_directory,
+        log_extension='.txt',
+        image_extension='.bmp')
 
-    for file in txtfiles:
+    for sem_filepaths in all_sem_filepaths:
+        filename = sem_filepaths['filename']
+        logfile_path = sem_filepaths['logfile_path']
+        image_path = sem_filepaths['image_path']
+        print(filename)
 
-        if f'{file[0: -4]}.bmp' in imagefiles:
-            print(file)
-            txtpath = os.path.join(
+        sem_parameters = fileIO.read_sem_log(file_path=logfile_path)
+
+        image = fileIO.read_image(file_path=image_path)
+
+        grating_region = anal.trim_to_region_of_interest(
+            image=image,
+            height=sem_parameters['image_height'],
+            width=sem_parameters['image_width'])
+
+        distanceperpixel = anal.calculate_distanceperpixel(
+            distance_value=sem_parameters['calibration_distance_value'],
+            distance_unit=sem_parameters['calibration_distance_unit'],
+            number_of_pixels=sem_parameters['calibration_number_of_pixels'])
+
+        periods = []
+        frequencies = []
+        for row in grating_region:
+            fourierfrequencies, fourierperiods = anal.calculate_frequencies(
+                row=row,
+                number_of_frequencies=3,
+                distance_pixel=distanceperpixel)
+            periods.append(fourierperiods)
+            frequencies.append(fourierfrequencies)
+
+        calculated_grating_properties = dict(
+            sem_parameters,
+            **{
+                'Average_Periods_nm': [
+                    np.sum(p) / len(p)
+                    for p in np.array(periods).T],
+                'Period_Errors_nm': [
+                    anal.StandardErrorMean(x=p)
+                    for p in np.array(periods).T],
+                'Average_Frequencies': [
+                    np.sum(f) / len(f)
+                    for f in np.array(frequencies).T],
+                'Frequencies_Errors': [
+                    anal.StandardErrorMean(x=f)
+                    for f in np.array(frequencies).T]}
+        )
+
+        fileIO.save_json(
+            out_path=os.path.join(
                 working_directory,
-                file)
-
-            sem_parameters = fileIO.read_sem_log(file_path=txtpath)
-
-            imagepath = os.path.join(
-                working_directory,
-                f'{file[0: -4]}.bmp')
-
-            image = fileIO.read_image(file_path=imagepath)
-
-            grating_region = anal.trim_to_region_of_interest(
-                image=image,
-                height=sem_parameters['image_height'],
-                width=sem_parameters['image_width'])
-
-            distanceperpixel = anal.calculate_distanceperpixel(
-                distance_value=sem_parameters['calibration_distance_value'],
-                distance_unit=sem_parameters['calibration_distance_unit'],
-                number_of_pixels=sem_parameters['calibration_number_of_pixels'])
-
-            periods = []
-            frequencies = []
-            for row in grating_region:
-                fourierfrequencies, fourierperiods = anal.FourierTransformRow(
-                    row=row,
-                    num_peaks=3,
-                    distance_pixel=distanceperpixel)
-                periods.append(fourierperiods)
-                frequencies.append(fourierfrequencies)
-
-            calculated_grating_properties = dict(
-                sem_parameters,
-                **{
-                    'Average_Periods_nm': [
-                        np.sum(p) / len(p)
-                        for p in np.array(periods).T],
-                    'Period_Errors_nm': [
-                        anal.StandardErrorMean(x=p)
-                        for p in np.array(periods).T],
-                    'Average_Frequencies': [
-                        np.sum(f) / len(f)
-                        for f in np.array(frequencies).T],
-                    'Frequencies_Errors': [
-                        anal.StandardErrorMean(x=f)
-                        for f in np.array(frequencies).T]}
-            )
-
-            fileIO.save_json(
-                out_path=os.path.join(
-                    working_directory,
-                    f'{file[0: -4]}_Results.json'),
-                dictionary=calculated_grating_properties)
-
-        else:
-            pass
+                f'{filename}_Results.json'),
+            dictionary=calculated_grating_properties)

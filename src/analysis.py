@@ -4,14 +4,14 @@ import math
 import statistics
 
 
-def FourierTransformRow(row,
-                        num_peaks,
+def calculate_frequencies(row,
+                        number_of_frequencies,
                         distance_pixel):
     '''
     Calculate fourier transform of image row.
     Args:
         row: <array> pixel values for image row
-        num_peaks: <int> number of peaks to pull from fourier transform (number
+        number_of_frequencies: <int> number of peaks to pull from fourier transform (number
                     of periods to analyse)
         distance_pixel: <float> distance in um per pixel
     Returns:
@@ -28,7 +28,7 @@ def FourierTransformRow(row,
     prominences, _, _ = sig.peak_prominences(
         x=magnitude,
         peaks=peaks)
-    indices = np.array(np.argsort(prominences)[-num_peaks:][::-1])
+    indices = np.array(np.argsort(prominences)[-number_of_frequencies:][::-1])
     periodpeaks = peaks[indices]
     fsteps = [p / (distance_pixel * samplesize) for p in periodpeaks]
     periods = [(1 / f) * 1E3 for f in fsteps]
