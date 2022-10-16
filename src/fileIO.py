@@ -3,49 +3,56 @@ import json
 import numpy as np
 
 
-def SEMDict(lines):
+def read_sem_log(file_path):
     '''
-    Read lines from SEM output txt file and pulls important parameters into
-    dictionary. To further add parameters, simply add names and keys to the
+    Load JEOL-SEM txt file as a dictionary of key parameters
+
+    Args:
+        file_path: <string> path to file
+    Returns:
+        parameterdict: <dict> parameter dictionary
+    '''
+    with open(file_path) as infile:
+        raw_lines = infile.readlines()
+    sanitized_lines = remove_unwanted_characters(raw_lines)
+    return extract_parameters(lines=sanitized_lines)
+
+def remove_unwanted_characters(raw_lines):
+    '''
+    Remove $ and \n characters from lines
+    '''
+    lines = [
+        (line.translate({ord('$'): None}))[0: -1]
+        for line in raw_lines]
+    return lines
+
+def extract_parameters(lines):
+    '''
+    Pull important parameters into dictionary. To further add parameters, simply add names and keys to the
     sample dictionary in this function. Remember FULL_SIZE parameter is [width,
     height].
+    
     Args:
         lines: <array> array of lines from txt file, stripped of '$' and '\n'
     Returns:
         parameterdict: <dict> parameter dictionary
     '''
-    parameterdict = {
-        'SM_EMI_CURRENT': None,
+    parameters = {
         'CM_ACCEL_VOLT': None,
-        'SM_WD': None,
-        'CM_MAG': None,
         'CM_BRIGHTNESS': None,
         'CM_CONTRAST': None,
         'CM_FULL_SIZE': None,
+        'CM_MAG': None,
+        'SM_EMI_CURRENT': None,
         'SM_MICRON_BAR': None,
-        'SM_MICRON_MARKER': None}
+        'SM_MICRON_MARKER': None,
+        'SM_WD': None,
+    }
     for line in lines:
-        splitline = line.split(' ')
-        if splitline[0] in parameterdict.keys():
-            parameterdict[f'{splitline[0]}'] = splitline[1:]
-    return parameterdict
-
-def readSemLog(file_path):
-    '''
-    Read .txt file output from SEM image output. Removes $ and \n characters
-    from line.
-    Args:
-        file_path: <string> path to file
-    Returns:
-        line: <array> array of stripped lines
-    '''
-    with open(file_path) as infile:
-        alllines = infile.readlines()
-        lines = [
-            (line.translate({ord('$'): None}))[0: -1]
-            for line in alllines]
-    return SEMDict(lines=lines)
-
+        parameter_label, *parameter_values = line.split(' ')
+        if parameter_label in parameters.keys():
+            parameters[parameter_label] = parameter_values
+    return parameters
 
 def OpenImgFile(file_path):
     '''

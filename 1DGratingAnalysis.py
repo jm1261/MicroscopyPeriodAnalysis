@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 dirpath,
                 file)
 
-            semParameters = fileIO.readSemLog(file_path=txtpath)
+            semParameters = fileIO.read_sem_log(file_path=txtpath)
 
             imagepath = os.path.join(
                 dirpath,
