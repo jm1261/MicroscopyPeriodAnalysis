@@ -6,20 +6,6 @@ import src.fileIO as fileIO
 import src.analysis as anal
 
 
-
-def dictionary_union(primary_dict,
-                secondary_dict):
-    '''
-    Add one dictionary key and values to another dictionary.
-    Args:
-        primary_dict: <dict> intial dictionary to add keys to
-        secondary_dict: <dict> dictionary of keys to add to primary
-    Returns:
-        primary_dict: <dict> initial dictionary with added keys and values
-    '''
-    return dict(primary_dict, **secondary_dict)
-
-
 if __name__ == '__main__':
 
     ''' Organisation '''
@@ -71,9 +57,9 @@ if __name__ == '__main__':
                 periods.append(fourierperiods)
                 frequencies.append(fourierfrequencies)
 
-            calculated_grating_properties = dictionary_union(
-                primary_dict=sem_parameters,
-                secondary_dict={
+            calculated_grating_properties = dict(
+                sem_parameters,
+                **{
                     'Average_Periods_nm': [
                         np.sum(p) / len(p)
                         for p in np.array(periods).T],
@@ -85,7 +71,8 @@ if __name__ == '__main__':
                         for f in np.array(frequencies).T],
                     'Frequencies_Errors': [
                         anal.StandardErrorMean(x=f)
-                        for f in np.array(frequencies).T]})
+                        for f in np.array(frequencies).T]}
+            )
 
             fileIO.save_json(
                 out_path=os.path.join(
