@@ -89,7 +89,7 @@ def FourierTransformRow(row,
     return frequencies, periods
 
 
-def AddDictKeys(primary_dict,
+def dictionary_union(primary_dict,
                 secondary_dict):
     '''
     Add one dictionary key and values to another dictionary.
@@ -99,9 +99,7 @@ def AddDictKeys(primary_dict,
     Returns:
         primary_dict: <dict> initial dictionary with added keys and values
     '''
-    for key, values in secondary_dict.items():
-        primary_dict.update({f'{key}': values})
-    return primary_dict
+    return dict(primary_dict, **secondary_dict)
 
 
 if __name__ == '__main__':
@@ -154,7 +152,7 @@ if __name__ == '__main__':
                 periods.append(fourierperiods)
                 frequencies.append(fourierfrequencies)
 
-            calculated_grating_properties = AddDictKeys(
+            calculated_grating_properties = dictionary_union(
                 primary_dict=sem_parameters,
                 secondary_dict={
                     'Average_Periods_nm': [
