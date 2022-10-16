@@ -23,7 +23,7 @@ def trim_to_region_of_interest(image,
     return region_of_interest
 
 
-def calculate_distanceperpixel(distance, number_of_pixels):
+def calculate_distanceperpixel(distance_value, distance_unit, number_of_pixels):
     '''
     Calaculate the distance each pixel represents in SEM image. Distance is
     set to micrometer scale, i.e. if image file returns um as unit, the scalar
@@ -36,24 +36,12 @@ def calculate_distanceperpixel(distance, number_of_pixels):
     Returns:
         distanceperpixel: <float> distance in um per pixel
     '''
-    distancedict = {
+    unit_scalar_map = {
         'mm': 1E3,
         'um': 1,
         'nm': 1E-3}
-    value = int(distance[: -2])
-    unit = distance.translate({
-        ord('0'): None,
-        ord('1'): None,
-        ord('2'): None,
-        ord('3'): None,
-        ord('4'): None,
-        ord('5'): None,
-        ord('6'): None,
-        ord('7'): None,
-        ord('8'): None,
-        ord('9'): None})
-    scalar = distancedict[unit]
-    distanceperpixel = (value * scalar) / int(number_of_pixels)
+    scalar = unit_scalar_map[distance_unit]
+    distanceperpixel = (distance_value * scalar) / int(number_of_pixels)
     return distanceperpixel
 
 
@@ -139,7 +127,8 @@ if __name__ == '__main__':
                 height=sem_parameters['image_height'],
                 width=sem_parameters['image_width'])
             distanceperpixel = calculate_distanceperpixel(
-                distance=sem_parameters['calibration_distance'],
+                distance_value=sem_parameters['calibration_distance_value'],
+                distance_unit=sem_parameters['calibration_distance_unit'],
                 number_of_pixels=sem_parameters['calibration_number_of_pixels'])
 
             periods = []

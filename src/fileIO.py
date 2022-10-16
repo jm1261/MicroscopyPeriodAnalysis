@@ -51,7 +51,6 @@ def sanitize_JEOL_parameters(raw_parameters):
     sanitized_parameters = {
         'acceleration_voltage': float(raw_parameters['CM_ACCEL_VOLT'][0]),
         'brightness': int(raw_parameters['CM_BRIGHTNESS'][0]),
-        'calibration_distance': raw_parameters['SM_MICRON_MARKER'][0],
         'calibration_number_of_pixels': int(raw_parameters['SM_MICRON_BAR'][0]),
         'contrast': int(raw_parameters['CM_CONTRAST'][0]),
         'emission_current': float(raw_parameters['SM_EMI_CURRENT'][0]),
@@ -62,8 +61,16 @@ def sanitize_JEOL_parameters(raw_parameters):
     # CM_FULL_SIZE is [width, height].
     width = 0
     height = 1
-    sanitized_parameters['image_width'] = int(raw_parameters['CM_FULL_SIZE'][width])
-    sanitized_parameters['image_height'] = int(raw_parameters['CM_FULL_SIZE'][height])
+    sanitized_parameters['image_width'] = int(
+        raw_parameters['CM_FULL_SIZE'][width])
+    sanitized_parameters['image_height'] = int(
+        raw_parameters['CM_FULL_SIZE'][height])
+
+    unit_suffix_length = 2
+    calibration_distance = raw_parameters['SM_MICRON_MARKER'][0]
+    sanitized_parameters['calibration_distance_value'] = int(
+        calibration_distance[: -unit_suffix_length])
+    sanitized_parameters['calibration_distance_unit'] = calibration_distance[-unit_suffix_length:]
 
     return sanitized_parameters
 
