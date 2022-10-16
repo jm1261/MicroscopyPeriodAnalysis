@@ -7,12 +7,12 @@ import src.fileIO as fileIO
 
 
 def trim_to_region_of_interest(image,
-                              height,
-                              width):
+                               height,
+                               width):
     '''
     Trim numpy array to specified region of interest.
     Args:
-        image: <object> image file for PIL
+        image: <np.array> array of pixels
         height: <int> number of pixels in vertical axis
         width: <int> number of pixels in horizontal axis
     Returns:
@@ -23,8 +23,7 @@ def trim_to_region_of_interest(image,
     return region_of_interest
 
 
-def DistPix(marker,
-            bar):
+def calculate_distanceperpixel(distance, number_of_pixels):
     '''
     Calaculate the distance each pixel represents in SEM image. Distance is
     set to micrometer scale, i.e. if image file returns um as unit, the scalar
@@ -41,8 +40,8 @@ def DistPix(marker,
         'mm': 1E3,
         'um': 1,
         'nm': 1E-3}
-    value = int(marker[: -2])
-    unit = marker.translate({
+    value = int(distance[: -2])
+    unit = distance.translate({
         ord('0'): None,
         ord('1'): None,
         ord('2'): None,
@@ -54,7 +53,7 @@ def DistPix(marker,
         ord('8'): None,
         ord('9'): None})
     scalar = distancedict[unit]
-    distanceperpixel = (value * scalar) / int(bar)
+    distanceperpixel = (value * scalar) / int(number_of_pixels)
     return distanceperpixel
 
 
@@ -129,7 +128,7 @@ if __name__ == '__main__':
                 dirpath,
                 file)
 
-            semParameters = fileIO.read_sem_log(file_path=txtpath)
+            sem_parameters = fileIO.read_sem_log(file_path=txtpath)
 
             imagepath = os.path.join(
                 dirpath,
@@ -139,11 +138,11 @@ if __name__ == '__main__':
 
             grating_region = trim_to_region_of_interest(
                 image=image,
-                height=semParameters['image_height'],
-                width=semParameters['image_width'])
-            distanceperpixel = DistPix(
-                marker=semParameters['calibration_distance'],
-                bar=semParameters['calibration_number_of_pixels'])
+                height=sem_parameters['image_height'],
+                width=sem_parameters['image_width'])
+            distanceperpixel = calculate_distanceperpixel(
+                distance=sem_parameters['calibration_distance'],
+                number_of_pixels=sem_parameters['calibration_number_of_pixels'])
 
             periods = []
             frequencies = []
@@ -155,8 +154,8 @@ if __name__ == '__main__':
                 periods.append(fourierperiods)
                 frequencies.append(fourierfrequencies)
 
-            calculatedGratingProperties = AddDictKeys(
-                primary_dict=semParameters,
+            calculated_grating_properties = AddDictKeys(
+                primary_dict=sem_parameters,
                 secondary_dict={
                     'Average_Periods_nm': [
                         np.sum(p) / len(p)
@@ -175,7 +174,7 @@ if __name__ == '__main__':
                 out_path=os.path.join(
                     dirpath,
                     f'{file[0: -4]}_Results.json'),
-                dictionary=calculatedGratingProperties)
+                dictionary=calculated_grating_properties)
 
         else:
             pass
