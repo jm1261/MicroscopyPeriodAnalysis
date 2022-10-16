@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import Functions.Organisation as org
 
 import src.analysis as anal
 import src.fileIO as fileIO
@@ -15,7 +14,7 @@ if __name__ == '__main__':
         title='Select Target Directory',
         dir_path=True)
 
-    txtfiles, imagefiles = org.FindDirFile(
+    txtfiles, imagefiles = filepaths.FindDirFile(
         dir_path=working_directory,
         file_string='.txt',
         image_string='.bmp')
