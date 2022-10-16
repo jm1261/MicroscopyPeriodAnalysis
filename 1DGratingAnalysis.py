@@ -11,7 +11,7 @@ if __name__ == '__main__':
         title='Select Target Directory',
         dir_path=True)
 
-    all_sem_filepaths = filepaths.FindDirFile(
+    all_sem_filepaths = filepaths.find_sem_file_paths(
         working_directory=working_directory,
         log_extension='.txt',
         image_extension='.bmp')

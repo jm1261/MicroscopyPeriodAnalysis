@@ -7,7 +7,7 @@ def get_working_directory(subdirectory='TestImages'):
     return working_directory
 
 
-def FindDirFile(working_directory,
+def find_sem_file_paths(working_directory,
                 log_extension,
                 image_extension):
     '''
