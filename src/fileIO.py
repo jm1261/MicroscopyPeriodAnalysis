@@ -44,7 +44,7 @@ def readSemLog(file_path):
         lines = [
             (line.translate({ord('$'): None}))[0: -1]
             for line in alllines]
-    return lines
+    return SEMDict(lines=lines)
 
 
 def OpenImgFile(file_path):
