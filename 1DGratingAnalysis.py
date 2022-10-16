@@ -176,7 +176,7 @@ if __name__ == '__main__':
             fileIO.saveJson(
                 out_path=os.path.join(
                     dirpath,
-                    f'{file[0: -4]}_Results.csv'),
+                    f'{file[0: -4]}_Results.json'),
                 dictionary=calculatedGratingProperties)
 
         else:
