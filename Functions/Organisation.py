@@ -1,6 +1,4 @@
 import os
-import json
-import numpy as np
 import tkinter as tk
 from tkinter import filedialog
 
@@ -101,31 +99,3 @@ def FindDirFile(dir_path,
         dir_path=dir_path,
         file_string=image_string)
     return datafiles, plotfiles
-
-
-def convert(o):
-    '''
-    Check type of data string
-    '''
-    if isinstance(o, np.generic):
-        return o.item()
-    raise TypeError
-
-
-def saveJson(out_path,
-            dictionary):
-    '''
-    Save dictionary to json file.
-    Args:
-        out_path: <string> path to file, including file name and extension
-        dictionary: <dict> python dictionary to save out
-    Returns:
-        None
-    '''
-    with open(out_path, 'w') as outfile:
-        json.dump(
-            dictionary,
-            outfile,
-            indent=2,
-            default=convert)
-        outfile.write('\n')
