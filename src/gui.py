@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
+from pathlib import Path
 
 def prompt_for_path(default,
                 title,
@@ -32,4 +33,4 @@ def prompt_for_path(default,
             initialdir=default,
             filetypes=file_type,
             title=title)
-    return path
+    return Path(path)

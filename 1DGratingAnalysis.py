@@ -1,5 +1,3 @@
-import os
-
 import src.analysis as anal
 import src.fileIO as fileIO
 import src.filepaths as filepaths
@@ -46,8 +44,7 @@ if __name__ == '__main__':
             **grating_parameters
         )
 
+        output_filepath = working_directory/f'{filename}_Results.json'
         fileIO.save_json(
-            out_path=os.path.join(
-                working_directory,
-                f'{filename}_Results.json'),
+            out_path=output_filepath,
             dictionary=calculated_grating_properties)
