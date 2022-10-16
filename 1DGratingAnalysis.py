@@ -49,9 +49,9 @@ if __name__ == '__main__':
 
             periods = []
             frequencies = []
-            for i in range(len(grating_region)):
+            for row in grating_region:
                 fourierfrequencies, fourierperiods = anal.FourierTransformRow(
-                    row=grating_region[i],
+                    row=row,
                     num_peaks=3,
                     distance_pixel=distanceperpixel)
                 periods.append(fourierperiods)
