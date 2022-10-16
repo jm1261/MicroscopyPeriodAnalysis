@@ -17,6 +17,7 @@ def read_sem_log(file_path):
     sanitized_lines = remove_unwanted_characters(raw_lines)
     return extract_parameters(lines=sanitized_lines)
 
+
 def remove_unwanted_characters(raw_lines):
     '''
     Remove $ and \n characters from lines
@@ -26,12 +27,13 @@ def remove_unwanted_characters(raw_lines):
         for line in raw_lines]
     return lines
 
+
 def extract_parameters(lines):
     '''
     Pull important parameters into dictionary. To further add parameters, simply add names and keys to the
     sample dictionary in this function. Remember FULL_SIZE parameter is [width,
     height].
-    
+
     Args:
         lines: <array> array of lines from txt file, stripped of '$' and '\n'
     Returns:
@@ -54,6 +56,7 @@ def extract_parameters(lines):
             parameters[parameter_label] = parameter_values
     return parameters
 
+
 def read_image(file_path):
     '''
     Loads image file.
@@ -65,8 +68,9 @@ def read_image(file_path):
     image = Image.open(file_path)
     return np.array(image)
 
+
 def save_json(out_path,
-            dictionary):
+              dictionary):
     '''
     Save dictionary to json file.
     Args:
@@ -82,6 +86,7 @@ def save_json(out_path,
             indent=2,
             default=convert)
         outfile.write('\n')
+
 
 def convert(o):
     '''
