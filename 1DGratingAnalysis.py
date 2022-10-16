@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
             image = fileIO.OpenImgFile(file_path=imagepath)
 
-            roi = ImageRegionInterest(
+            grating_region = ImageRegionInterest(
                 image=image,
                 height=int(semParameters['CM_FULL_SIZE'][1]),
                 width=int(semParameters['CM_FULL_SIZE'][0]))
@@ -148,9 +148,9 @@ if __name__ == '__main__':
 
             periods = []
             frequencies = []
-            for i in range(len(roi)):
+            for i in range(len(grating_region)):
                 fourierfrequencies, fourierperiods = FourierTransformRow(
-                    row=roi[i],
+                    row=grating_region[i],
                     num_peaks=3,
                     distance_pixel=distanceperpixel)
                 periods.append(fourierperiods)
