@@ -31,8 +31,8 @@ def calculate_distanceperpixel(distance, number_of_pixels):
     dictionary and calculates from array. Ensure arguments are individual array
     elements.
     Args:
-        marker: <string> SM_MICRON_MARKER string from parameter dictionary
-        bar: <string> SM_MICRON_BAR string from parameter dictionary
+        distance: <string> of the form '123nm'
+        number_of_pixels: <int>
     Returns:
         distanceperpixel: <float> distance in um per pixel
     '''
