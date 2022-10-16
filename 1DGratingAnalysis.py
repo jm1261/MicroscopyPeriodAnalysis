@@ -4,7 +4,7 @@ import Functions.Organisation as org
 
 import src.fileIO as fileIO
 import src.analysis as anal
-
+import src.gui as gui
 
 if __name__ == '__main__':
 
@@ -13,10 +13,12 @@ if __name__ == '__main__':
     rootpath = os.path.join(
         root,
         'TestImage')
-    dirpath = org.FindThePath(
+
+    dirpath = gui.prompt_for_path(
         default=rootpath,
         title='Select Target Directory',
         dir_path=True)
+
     txtfiles, imagefiles = org.FindDirFile(
         dir_path=dirpath,
         file_string='.txt',
@@ -42,6 +44,7 @@ if __name__ == '__main__':
                 image=image,
                 height=sem_parameters['image_height'],
                 width=sem_parameters['image_width'])
+
             distanceperpixel = anal.calculate_distanceperpixel(
                 distance_value=sem_parameters['calibration_distance_value'],
                 distance_unit=sem_parameters['calibration_distance_unit'],
