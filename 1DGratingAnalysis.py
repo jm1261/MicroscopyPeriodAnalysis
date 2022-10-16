@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 import src.analysis as anal
 import src.fileIO as fileIO
@@ -39,31 +38,12 @@ if __name__ == '__main__':
             distance_unit=sem_parameters['calibration_distance_unit'],
             number_of_pixels=sem_parameters['calibration_number_of_pixels'])
 
-        periods = []
-        frequencies = []
-        for row in grating_region:
-            fourierfrequencies, fourierperiods = anal.calculate_frequencies(
-                row=row,
-                number_of_frequencies=3,
-                micrometers_per_pixel=distanceperpixel)
-            periods.append(fourierperiods)
-            frequencies.append(fourierfrequencies)
+        grating_parameters = anal.calculate_grating_frequencies(
+            grating_region, distanceperpixel)
 
         calculated_grating_properties = dict(
             sem_parameters,
-            **{
-                'Average_Periods_nm': [
-                    np.sum(p) / len(p)
-                    for p in np.array(periods).T],
-                'Period_Errors_nm': [
-                    anal.StandardErrorMean(x=p)
-                    for p in np.array(periods).T],
-                'Average_Frequencies': [
-                    np.sum(f) / len(f)
-                    for f in np.array(frequencies).T],
-                'Frequencies_Errors': [
-                    anal.StandardErrorMean(x=f)
-                    for f in np.array(frequencies).T]}
+            **grating_parameters
         )
 
         fileIO.save_json(

@@ -4,7 +4,32 @@ import math
 import statistics
 
 
-def calculate_frequencies(row,
+def calculate_grating_frequencies(grating, distanceperpixel):
+    periods = []
+    frequencies = []
+    for row in grating:
+        grating_frequencies, grating_periods = calculate_row_frequencies(
+            row=row,
+            number_of_frequencies=3,
+            micrometers_per_pixel=distanceperpixel)
+        periods.append(grating_periods)
+        frequencies.append(grating_frequencies)
+    periods = np.array(periods).T
+    frequencies = np.array(frequencies).T
+
+    period_average = [np.sum(p) / len(p) for p in periods]
+    period_errors = [StandardErrorMean(x=p) for p in periods]
+    frequency_average = [np.sum(f) / len(f) for f in frequencies]
+    frequency_errors = [StandardErrorMean(x=f) for f in frequencies]
+
+    return {
+        'Average_Periods_nm': period_average,
+        'Period_Errors_nm': period_errors,
+        'Average_Frequencies': frequency_average,
+        'Frequencies_Errors': frequency_errors}
+
+
+def calculate_row_frequencies(row,
                           number_of_frequencies,
                           micrometers_per_pixel):
     '''
@@ -34,7 +59,8 @@ def calculate_frequencies(row,
     frequency_coordinates = np.fft.rfftfreq(samplesize, 1)
     frequencies = frequency_coordinates[locations_sorted_by_prominence]
 
-    frequency_steps = [p / (micrometers_per_pixel * samplesize) for p in selected_peak_locations]
+    frequency_steps = [p / (micrometers_per_pixel * samplesize)
+                       for p in selected_peak_locations]
     periods = [(1 / f) * 1E3 for f in frequency_steps]
 
     return frequencies, periods
