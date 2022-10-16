@@ -6,11 +6,11 @@ import Functions.Organisation as org
 import src.fileIO as fileIO
 
 
-def ImageRegionInterest(image,
-                        height,
-                        width):
+def trim_to_region_of_interest(image,
+                              height,
+                              width):
     '''
-    Trim PIL image to specified region of interest.
+    Trim numpy array to specified region of interest.
     Args:
         image: <object> image file for PIL
         height: <int> number of pixels in vertical axis
@@ -19,8 +19,8 @@ def ImageRegionInterest(image,
         pixels: <array> pixel array of image
         regionofinterest: <array> trimmed pixel array to region of interest
     '''
-    regionofinterest = image[0: height, 0: width]
-    return regionofinterest
+    region_of_interest = image[0: height, 0: width]
+    return region_of_interest
 
 
 def DistPix(marker,
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
             image = fileIO.read_image(file_path=imagepath)
 
-            grating_region = ImageRegionInterest(
+            grating_region = trim_to_region_of_interest(
                 image=image,
                 height=int(semParameters['CM_FULL_SIZE'][1]),
                 width=int(semParameters['CM_FULL_SIZE'][0]))
