@@ -1,5 +1,4 @@
 import math
-import statistics
 import numpy as np
 import scipy.signal as sig
 from src.plotting import multi_xsys_plot
@@ -24,7 +23,7 @@ def standard_deviation(x):
     Returns:
         stdev: <float> standard deviation of x
     '''
-    return statistics.stdev(x)
+    return np.std(x)
 
 
 def standard_error_mean(x):
@@ -35,7 +34,7 @@ def standard_error_mean(x):
     Returns:
         SEOM: <float> standard error of the mean of x
     '''
-    return statistics.stdev(x) / math.sqrt(len(x) - 1)
+    return np.std(x) / math.sqrt(len(x) - 1)
 
 
 def standard_quadrature(x,
@@ -97,19 +96,19 @@ def calc_distance_per_pixel(distance_value,
     return distanceperpixel
 
 
-def pixel_threshold(row,
+def pixel_threshold(raw_row,
                     threshold):
     '''
     Turn analog pixel data in binary signal. Any data above set threshold set to
     maximum pixel value (255), anything below set to 0.
     Args:
-        row: <array> pixel values for image row
+        raw_row: <array> pixel values for image row
         threshold: <float/int> pixel value for thresholding
     Returns:
         binary_row: <array> binary row pixel data
     '''
     binary_row = []
-    for pixel in row:
+    for pixel in raw_row:
         if pixel < threshold:
             binary_row.append(0)
         if pixel >= threshold:
@@ -169,6 +168,7 @@ def row_fftsignalprocessing(frequency_coordinates,
 
 def calculate_grating_frequency(grating,
                                 distance_per_pixel,
+                                threshold='None',
                                 save_figure=False,
                                 figure_outpath=False,
                                 file_name=False):
@@ -179,6 +179,11 @@ def calculate_grating_frequency(grating,
     Args:
         grating: <array> pixel array of grating region/analysis region
         distance_per_pixel: <float> distance in um per pixel
+        threshold: <string> None - no threshold will be applied
+                            Mean - a mean threshold will be applied, anything
+                                    above mean will be 255, below 0
+                            StdDev - a mean-stddev threshold will be applied,
+                                    anything above will be 255, below 0
         save_figure: <bool> if True, saves raw fourier transform (x10) for check
         figure_outpath: <bool/string> if save_figure, figure_outpath is a
                         directory path to save figure out
@@ -193,7 +198,17 @@ def calculate_grating_frequency(grating,
     frequencies = []
     frequency_coordinates = []
     absolute_intensities = []
-    for index, row in enumerate(grating):
+    for index, raw_row in enumerate(grating):
+        if threshold == 'Mean':
+            row = pixel_threshold(
+                raw_row=raw_row,
+                threshold=mean_array(x=raw_row))
+        elif threshold == 'StdDev':
+            row = pixel_threshold(
+                raw_row=raw_row,
+                threshold=(mean_array(x=raw_row) - standard_deviation(x=raw_row)))
+        else:
+            row = raw_row
         sample_size, freq_coords, abs_intensity = calc_row_freqs(row=row)
         grating_frequencies, grating_periods = row_fftsignalprocessing(
             frequency_coordinates=freq_coords,
