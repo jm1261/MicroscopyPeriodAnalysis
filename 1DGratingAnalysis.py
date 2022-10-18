@@ -44,19 +44,24 @@ if __name__ == '__main__':
             distance_value = image_parameters['calibration_distance'],
             distance_unit=image_parameters['distance_unit'],
             number_of_pixels=image_parameters['calibration_pixels'])
-        grating_parameters = anal.calculate_grating_frequency(
-            grating=grating_region,
-            distance_per_pixel=distanceperpixel,
-            save_figure=True,
-            figure_outpath=os.path.join(
-                results_path,
-                f'{filename}_Results.png'),
-            file_name=filename)
 
-        ''' Results Out '''
-        grating_properties = dict(image_parameters, **grating_parameters)
-        io.save_json_dicts(
-            out_path=os.path.join(
-                results_path,
-                f'{filename}_Results.json'),
-            dictionary=grating_properties)
+        ''' Treshold Filters '''
+        thresholds = ['None', 'Mean', 'StdDev']
+        for threshold in thresholds:
+            grating_parameters = anal.calculate_grating_frequency(
+                grating=grating_region,
+                distance_per_pixel=distanceperpixel,
+                threshold=threshold,
+                save_figure=True,
+                figure_outpath=os.path.join(
+                    results_path,
+                    f'{filename}_{threshold}_Results.png'),
+                file_name=filename)
+
+            ''' Results Out '''
+            grating_properties = dict(image_parameters, **grating_parameters)
+            io.save_json_dicts(
+                out_path=os.path.join(
+                    results_path,
+                    f'{filename}_{threshold}_Results.json'),
+                dictionary=grating_properties)
