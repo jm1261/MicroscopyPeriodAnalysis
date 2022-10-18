@@ -1,50 +1,62 @@
+import os
+import src.GUI as gui
+import src.fileIO as io
+import src.filepaths as fp
 import src.analysis as anal
-import src.fileIO as fileIO
-import src.filepaths as filepaths
-import src.gui as gui
+
 
 if __name__ == '__main__':
 
-    working_directory = filepaths.get_working_directory()
-    working_directory = gui.prompt_for_path(
-        default=working_directory,
+    ''' Organisation '''
+    root = os.getcwd()
+    directory_path = gui.prompt_for_path(
+        default=root,
         title='Select Target Directory',
         dir_path=True)
-
-    all_sem_filepaths = filepaths.find_sem_file_paths(
-        working_directory=working_directory,
-        log_extension='.txt',
+    results_path = fp.check_directory_exists(
+        dir_path=os.path.join(
+            directory_path,
+            'Results'))
+    sem_files = fp.find_sem_file_paths(
+        dir_path=directory_path,
+        file_extension='.txt',
         image_extension='.bmp')
 
-    for sem_filepaths in all_sem_filepaths:
-        filename = sem_filepaths['filename']
-        logfile_path = sem_filepaths['logfile_path']
-        image_path = sem_filepaths['image_path']
+    ''' Loop Files '''
+    for sem_file in sem_files:
+        filename = sem_file['filename']
+        log_path = sem_file['log_path']
+        image_path = sem_file['image_path']
         print(filename)
 
-        sem_parameters = fileIO.read_sem_log(file_path=logfile_path)
+        ''' Load Files '''
+        image_parameters = io.read_SEM_log(file_path=log_path)
+        image = io.read_image(file_path=image_path)
 
-        image = fileIO.read_image(file_path=image_path)
-
-        grating_region = anal.trim_to_region_of_interest(
+        ''' Trim ROI '''
+        grating_region = anal.trim_img_to_roi(
             image=image,
-            height=sem_parameters['image_height'],
-            width=sem_parameters['image_width'])
+            height=image_parameters['image_height'],
+            width=image_parameters['image_width'])
 
-        distanceperpixel = anal.calculate_distanceperpixel(
-            distance_value=sem_parameters['calibration_distance_value'],
-            distance_unit=sem_parameters['calibration_distance_unit'],
-            number_of_pixels=sem_parameters['calibration_number_of_pixels'])
+        ''' Calculations '''
+        distanceperpixel = anal.calc_distance_per_pixel(
+            distance_value = image_parameters['calibration_distance'],
+            distance_unit=image_parameters['distance_unit'],
+            number_of_pixels=image_parameters['calibration_pixels'])
+        grating_parameters = anal.calculate_grating_frequency(
+            grating=grating_region,
+            distance_per_pixel=distanceperpixel,
+            save_figure=True,
+            figure_outpath=os.path.join(
+                results_path,
+                f'{filename}_Results.png'),
+            file_name=filename)
 
-        grating_parameters = anal.calculate_grating_frequencies(
-            grating_region, distanceperpixel)
-
-        calculated_grating_properties = dict(
-            sem_parameters,
-            **grating_parameters
-        )
-
-        output_filepath = working_directory/f'{filename}_Results.json'
-        fileIO.save_json(
-            out_path=output_filepath,
-            dictionary=calculated_grating_properties)
+        ''' Results Out '''
+        grating_properties = dict(image_parameters, **grating_parameters)
+        io.save_json_dicts(
+            out_path=os.path.join(
+                results_path,
+                f'{filename}_Results.json'),
+            dictionary=grating_properties)

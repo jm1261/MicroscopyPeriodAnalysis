@@ -1,72 +1,22 @@
-import numpy as np
-import scipy.signal as sig
 import math
 import statistics
+import numpy as np
+import scipy.signal as sig
+from src.plotting import multi_xsys_plot
 
 
-def calculate_grating_frequencies(grating, distanceperpixel):
-    periods = []
-    frequencies = []
-    for row in grating:
-        grating_frequencies, grating_periods = calculate_row_frequencies(
-            row=row,
-            number_of_frequencies=3,
-            micrometers_per_pixel=distanceperpixel)
-        periods.append(grating_periods)
-        frequencies.append(grating_frequencies)
-    periods = np.array(periods).T
-    frequencies = np.array(frequencies).T
-
-    period_average = [np.sum(p) / len(p) for p in periods]
-    period_errors = [StandardErrorMean(x=p) for p in periods]
-    frequency_average = [np.sum(f) / len(f) for f in frequencies]
-    frequency_errors = [StandardErrorMean(x=f) for f in frequencies]
-
-    return {
-        'Average_Periods_nm': period_average,
-        'Period_Errors_nm': period_errors,
-        'Average_Frequencies': frequency_average,
-        'Frequencies_Errors': frequency_errors}
-
-
-def calculate_row_frequencies(row,
-                          number_of_frequencies,
-                          micrometers_per_pixel):
+def mean_array(x):
     '''
-    Calculate fourier transform of image row.
+    Calculate mean of array.
     Args:
-        row: <array> pixel values for image row
-        number_of_frequencies: <int> number of peaks to pull from fourier transform (number
-                    of periods to analyse)
-        micrometers_per_pixel: <float> distance in um per pixel
+        x: <array> data array
     Returns:
-        frequencies: <array> fourier space frequency values of period peaks
-        periods: <array> signal periods from fourier transform converted from um
-                    to nm
+        mean: <float> mean value of x
     '''
-    frequency_intensities = np.fft.rfft(row)
-    absolute_frequency_intensities = np.abs(frequency_intensities)
-
-    peak_locations, _ = sig.find_peaks(x=absolute_frequency_intensities)
-    prominences, _, _ = sig.peak_prominences(
-        x=absolute_frequency_intensities,
-        peaks=peak_locations)
-    locations_sorted_by_prominence = np.array(
-        np.argsort(prominences)[-number_of_frequencies:][::-1])
-    selected_peak_locations = peak_locations[locations_sorted_by_prominence]
-
-    samplesize = len(row)
-    frequency_coordinates = np.fft.rfftfreq(samplesize, 1)
-    frequencies = frequency_coordinates[locations_sorted_by_prominence]
-
-    frequency_steps = [p / (micrometers_per_pixel * samplesize)
-                       for p in selected_peak_locations]
-    periods = [(1 / f) * 1E3 for f in frequency_steps]
-
-    return frequencies, periods
+    return np.sum(x) / len(x)
 
 
-def StandardDeviation(x):
+def standard_deviation(x):
     '''
     Calculate standard deviation of array.
     Args:
@@ -77,7 +27,7 @@ def StandardDeviation(x):
     return statistics.stdev(x)
 
 
-def StandardErrorMean(x):
+def standard_error_mean(x):
     '''
     Standard error of the mean of an array.
     Args:
@@ -88,11 +38,11 @@ def StandardErrorMean(x):
     return statistics.stdev(x) / math.sqrt(len(x) - 1)
 
 
-def QuadratureError(x,
-                    y,
-                    z,
-                    delta_x,
-                    delta_y):
+def standard_quadrature(x,
+                        y,
+                        z,
+                        delta_x,
+                        delta_y):
     '''
     Quadrature error for z array, calculated from x and y.
     Args:
@@ -108,40 +58,173 @@ def QuadratureError(x,
     return deltaz
 
 
-def calculate_distanceperpixel(distance_value, distance_unit, number_of_pixels):
+def trim_img_to_roi(image,
+                    height,
+                    width):
     '''
-    Calaculate the distance each pixel represents in SEM image. Distance is
-    set to micrometer scale, i.e. if image file returns um as unit, the scalar
-    returns 1, mm is a 1000x more and nm is 1000x less. Pulls data from params
-    dictionary and calculates from array. Ensure arguments are individual array
-    elements.
+    Trim pixel array to specific region of interest.
     Args:
-        distance: <string> of the form '123nm'
-        number_of_pixels: <int>
+        image: <array> array of pixels
+        height: <int> number of pixels in vertical axis
+        width: <int> number of pixels in horizontal axis
+    Returns:
+        region_of_interest: <array> trimmed pixel array
+    '''
+    region_of_interest = image[0: height, 0: width]
+    return region_of_interest
+
+
+def calc_distance_per_pixel(distance_value,
+                            distance_unit,
+                            number_of_pixels):
+    '''
+    Calculate distance each pixel represents in SEM image. Distance is set to
+    micrometer scale. Pulls data from parameters dictionary and calculates from
+    array.
+    Args:
+        distance_value: <int> distance represented by bar in SEM image
+        distance_unit: <string> units of distance marker from SEM image
+        number_of_pixels: <string> number of pixels represented by distance mark
     Returns:
         distanceperpixel: <float> distance in um per pixel
     '''
-    unit_scalar_map = {
+    unit_scalar = {
         'mm': 1E3,
         'um': 1,
         'nm': 1E-3}
-    scalar = unit_scalar_map[distance_unit]
+    scalar = unit_scalar[distance_unit]
     distanceperpixel = (distance_value * scalar) / int(number_of_pixels)
     return distanceperpixel
 
 
-def trim_to_region_of_interest(image,
-                               height,
-                               width):
+def pixel_threshold(row,
+                    threshold):
     '''
-    Trim numpy array to specified region of interest.
+    Turn analog pixel data in binary signal. Any data above set threshold set to
+    maximum pixel value (255), anything below set to 0.
     Args:
-        image: <np.array> array of pixels
-        height: <int> number of pixels in vertical axis
-        width: <int> number of pixels in horizontal axis
+        row: <array> pixel values for image row
+        threshold: <float/int> pixel value for thresholding
     Returns:
-        pixels: <array> pixel array of image
-        regionofinterest: <array> trimmed pixel array to region of interest
+        binary_row: <array> binary row pixel data
     '''
-    region_of_interest = image[0: height, 0: width]
-    return region_of_interest
+    binary_row = []
+    for pixel in row:
+        if pixel < threshold:
+            binary_row.append(0)
+        if pixel >= threshold:
+            binary_row.append(255)
+    return binary_row
+
+
+def calc_row_freqs(row):
+    '''
+    Calculate Fourier transform of image row.
+    Args:
+        row: <array> pixel values for image row
+    Returns:
+        sample_size: <int> length of row (sample length)
+        frequency_coordinates: <array> frequency space x-axis array
+        absolute_intensity: <array> magnitude of pixel data fourier transform
+    '''
+    sample_size = len(row)
+    frequency_coordinates = np.fft.rfftfreq(sample_size, 1)
+    frequency_intensities = np.fft.rfft(row)
+    absolute_intensity = np.abs(frequency_intensities)
+    return sample_size, frequency_coordinates, absolute_intensity
+
+
+def row_fftsignalprocessing(frequency_coordinates,
+                            absolute_intensity,
+                            micrometers_per_pixel,
+                            sample_size,
+                            number_of_frequencies):
+    '''
+    Process fourier transform of image row to find periods and frequencies.
+    Args:
+        frequency_coordinates: <array> frequency space x-axis array
+        absolute_intensity: <array> magnitude of pixel data fourier transform
+        micrometers_per_pixel: <float> distance in um per pixel
+        sample_size: <int> length of row (sample length)
+        number_of_frequencies: <int> number of peaks to pull from fourier
+                                transform (number of periods to analyse)
+    Returns:
+        frequenies: <array> fourier space frequency values of period peaks
+        periods: <array> signal periods from fourier transform in nm
+    '''
+    peak_locations, _ = sig.find_peaks(x=absolute_intensity)
+    prominences, _, _ = sig.peak_prominences(
+        x=absolute_intensity,
+        peaks=peak_locations)
+    prominence_sorted_locations = np.array(
+        np.argsort(prominences)[-number_of_frequencies:][::-1])
+    selected_peak_locations = peak_locations[prominence_sorted_locations]
+    frequency_steps = [
+        p / (micrometers_per_pixel * sample_size)
+        for p in selected_peak_locations]
+    periods = [(1 / f) * 1E3 for f in frequency_steps]
+    frequencies = frequency_coordinates[prominence_sorted_locations]
+    return frequencies, periods
+
+
+def calculate_grating_frequency(grating,
+                                distance_per_pixel,
+                                save_figure=False,
+                                figure_outpath=False,
+                                file_name=False):
+    '''
+    Process grating frequency coordinates and periods, average and calculate the
+    errors using standard error on the mean. Pull 10 rows and plot the fourier
+    transform to ensure the code works as intended, default is not to plot.
+    Args:
+        grating: <array> pixel array of grating region/analysis region
+        distance_per_pixel: <float> distance in um per pixel
+        save_figure: <bool> if True, saves raw fourier transform (x10) for check
+        figure_outpath: <bool/string> if save_figure, figure_outpath is a
+                        directory path to save figure out
+        file_name: <bool/string> if save_figure, file_name is a name assigned
+                    to figure
+    Returns:
+        results: <dictionary> dictionary containing average period, period
+                errors, average frequency coordinates, frequency errors from the
+                fourier transform calculation
+    '''
+    periods = []
+    frequencies = []
+    frequency_coordinates = []
+    absolute_intensities = []
+    for index, row in enumerate(grating):
+        sample_size, freq_coords, abs_intensity = calc_row_freqs(row=row)
+        grating_frequencies, grating_periods = row_fftsignalprocessing(
+            frequency_coordinates=freq_coords,
+            absolute_intensity=abs_intensity,
+            micrometers_per_pixel=distance_per_pixel,
+            sample_size=sample_size,
+            number_of_frequencies=3)
+        periods.append(grating_periods)
+        frequencies.append(grating_frequencies)
+        if index % (len(grating) / 10):
+            frequency_coordinates.append(freq_coords)
+            absolute_intensities.append(abs_intensity)
+
+    period_average = [mean_array(x=p) for p in np.array(periods).T]
+    period_errors = [standard_error_mean(
+        x=p) for p in np.array(periods).T]
+    frequency_average = [mean_array(x=f) for f in np.array(frequencies).T]
+    frequency_errors = [standard_error_mean(
+        x=f) for f in np.array(frequencies).T]
+
+    if save_figure:
+        multi_xsys_plot(
+            xs=frequency_coordinates,
+            ys=absolute_intensities,
+            x_label='Frequency',
+            y_label='Absolute Intensity',
+            title=file_name,
+            out_path=figure_outpath)
+
+    return {
+        'Average_Periods_nm': period_average,
+        'Period_Errors_nm': period_errors,
+        'Average_Frequencies': frequency_average,
+        'Frequencies_Errors': frequency_errors}
