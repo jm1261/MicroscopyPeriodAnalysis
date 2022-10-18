@@ -203,10 +203,14 @@ def calculate_grating_frequency(grating,
             row = pixel_threshold(
                 raw_row=raw_row,
                 threshold=mean_array(x=raw_row))
-        elif threshold == 'StdDev':
+        elif threshold == 'Mean+StdDev':
             row = pixel_threshold(
                 raw_row=raw_row,
-                threshold=(mean_array(x=raw_row) - standard_deviation(x=raw_row)))
+                threshold=mean_array(x=raw_row) + standard_deviation(x=raw_row))
+        elif threshold == 'Mean-StdDev':
+            row = pixel_threshold(
+                raw_row=raw_row,
+                threshold=mean_array(x=raw_row) - standard_deviation(x=raw_row))
         else:
             row = raw_row
         sample_size, freq_coords, abs_intensity = calc_row_freqs(row=row)

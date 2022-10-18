@@ -46,7 +46,8 @@ if __name__ == '__main__':
             number_of_pixels=image_parameters['calibration_pixels'])
 
         ''' Treshold Filters '''
-        thresholds = ['None', 'Mean', 'StdDev']
+        thresholds = [
+            'None', 'Mean', 'Mean-StdDev']
         for threshold in thresholds:
             grating_parameters = anal.calculate_grating_frequency(
                 grating=grating_region,
