@@ -131,3 +131,5 @@ dmypy.json
 # ignore results
 *.config
 *.csv
+*.json
+*.png
