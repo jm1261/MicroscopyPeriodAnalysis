@@ -52,6 +52,10 @@ if __name__ == '__main__':
         'A4': 440,
         'A5': 390,
         'A6': 475}
+    design_fillfactors = {}
+    fill_factor = 0.8
+    for key, value in design_periods.items():
+        design_fillfactors.update({f'{key}': fill_factor * value})
 
     ''' Find Files '''
     all_files = extractallfiles(
@@ -68,33 +72,44 @@ if __name__ == '__main__':
         file_parameters = open_json(file_path=file_path)
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         file_key = file_name.split('_')[0]
+        grating_key = f'{file_key}_{file_name.split("_")[1]}'
         threshold_key = file_name.split('_')[2]
 
         calculated_periods = file_parameters['Average_Periods_nm']
         calculated_differences = [
-            np.abs(design_periods[f'{file_key}'] - period)
+            np.abs(design_fillfactors[f'{file_key}'] - period)
             for period in calculated_periods]
         min_difference = np.min(calculated_differences)
         benchmark_values = [f'{threshold_key}', min_difference]
-        if f'{file_key}' in benchmark_dictionary.keys():
-            if benchmark_dictionary[f'{file_key}'][1] > min_difference:
+        if f'{grating_key}' in benchmark_dictionary.keys():
+            if benchmark_dictionary[f'{grating_key}'][1] > min_difference:
                 benchmark_dictionary.update(
-                    {f'{file_key}': benchmark_values})
+                    {f'{grating_key}': benchmark_values})
             else:
                 all_other_benchmarks.update(
-                    {f'{file_key}_{threshold_key}': min_difference})
+                    {f'{file_name}_{threshold_key}': min_difference})
         else:
             benchmark_dictionary.update(
-                {f'{file_key}': benchmark_values})
+                {f'{grating_key}': benchmark_values})
             all_other_benchmarks.update(
-                {f'{file_key}_{threshold_key}': min_difference})
+                {f'{file_name}_{threshold_key}': min_difference})
     io.save_json_dicts(
         out_path=os.path.join(
-            root,
-            'All_Benchmark_Data.json'),
+            directory_path,
+            '..',
+            'All_ff_Benchmark_Data.json'),
         dictionary=all_other_benchmarks)
     io.save_json_dicts(
         out_path=os.path.join(
-            root,
-            'Best_Benchmarks.json'),
+            directory_path,
+            '..',
+            'Best_ff_Benchmarks.json'),
         dictionary=benchmark_dictionary)
+    methods = []
+    for key, values in benchmark_dictionary.items():
+        methods.append(values[0])
+    negstd = methods.count('-StdDev')
+    posstd = methods.count('StdDev')
+    mean = methods.count('Mean')
+    nones = methods.count('None')
+    print(negstd, posstd, mean, nones)
