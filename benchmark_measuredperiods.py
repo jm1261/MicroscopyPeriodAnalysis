@@ -45,17 +45,13 @@ if __name__ == '__main__':
             directory_path,
             'Results'))
 
-    design_periods = {
-        'A1': 340,
-        'A2': 405,
-        'A3': 365,
-        'A4': 440,
-        'A5': 390,
-        'A6': 475}
-    design_fillfactors = {}
-    fill_factor = 0.8
-    for key, value in design_periods.items():
-        design_fillfactors.update({f'{key}': fill_factor * value})
+    measured_periods = {
+        'A1': 345,
+        'A2': 370,
+        'A3': 394,
+        'A4': 410,
+        'A5': 450,
+        'A6': 480}
 
     ''' Find Files '''
     all_files = extractallfiles(
@@ -77,7 +73,7 @@ if __name__ == '__main__':
 
         calculated_periods = file_parameters['Average_Periods_nm']
         calculated_differences = [
-            np.abs(design_fillfactors[f'{file_key}'] - period)
+            np.abs(measured_periods[f'{file_key}'] - period)
             for period in calculated_periods]
         min_difference = np.min(calculated_differences)
         benchmark_values = [f'{threshold_key}', min_difference]
@@ -97,19 +93,19 @@ if __name__ == '__main__':
         out_path=os.path.join(
             directory_path,
             '..',
-            'All_ff_Benchmark_Data.json'),
+            'All_measured_Benchmark_Data.json'),
         dictionary=all_other_benchmarks)
     io.save_json_dicts(
         out_path=os.path.join(
             directory_path,
             '..',
-            'Best_ff_Benchmarks.json'),
+            'Best_measured_Benchmarks.json'),
         dictionary=benchmark_dictionary)
     methods = []
     for key, values in benchmark_dictionary.items():
         methods.append(values[0])
-    negstd = methods.count('-StdDev')
-    posstd = methods.count('StdDev')
+    negstd = methods.count('Mean-StdDev')
+    posstd = methods.count('Mean+StdDev')
     mean = methods.count('Mean')
     nones = methods.count('None')
     print(negstd, posstd, mean, nones)

@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import scipy.signal as sig
-from src.plotting import multi_xsys_plot
+from src.plotting import multi_xsys_plot, multiy_plot
 
 
 def mean_array(x):
@@ -198,6 +198,7 @@ def calculate_grating_frequency(grating,
     frequencies = []
     frequency_coordinates = []
     absolute_intensities = []
+    rows = []
     for index, raw_row in enumerate(grating):
         if threshold == 'Mean':
             row = pixel_threshold(
@@ -219,12 +220,13 @@ def calculate_grating_frequency(grating,
             absolute_intensity=abs_intensity,
             micrometers_per_pixel=distance_per_pixel,
             sample_size=sample_size,
-            number_of_frequencies=3)
+            number_of_frequencies=5)
         periods.append(grating_periods)
         frequencies.append(grating_frequencies)
-        if index % (len(grating) / 10):
+        if index % (len(grating) / 100):
             frequency_coordinates.append(freq_coords)
             absolute_intensities.append(abs_intensity)
+            rows.append(row)
 
     period_average = [mean_array(x=p) for p in np.array(periods).T]
     period_errors = [standard_error_mean(
@@ -240,7 +242,13 @@ def calculate_grating_frequency(grating,
             x_label='Frequency',
             y_label='Absolute Intensity',
             title=file_name,
-            out_path=figure_outpath)
+            out_path=figure_outpath[0])
+        multiy_plot(
+            ys=rows,
+            x_label='Pixels',
+            y_label='Pixel Intensity',
+            title=file_name,
+            out_path=figure_outpath[1])
 
     return {
         'Average_Periods_nm': period_average,
