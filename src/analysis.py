@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import scipy.signal as sig
 from src.plotting import multi_xsys_plot, multiy_plot
@@ -34,7 +33,7 @@ def standard_error_mean(x):
     Returns:
         SEOM: <float> standard error of the mean of x
     '''
-    return np.std(x) / math.sqrt(len(x) - 1)
+    return np.std(x) / np.sqrt(len(x) - 1)
 
 
 def standard_quadrature(x,
@@ -53,7 +52,7 @@ def standard_quadrature(x,
     Returns:
         delta_z: <array> error z-data array
     '''
-    deltaz = z * math.sqrt(((delta_x / x) ** 2) + ((delta_y / y) ** 2))
+    deltaz = z * np.sqrt(((delta_x / x) ** 2) + ((delta_y / y) ** 2))
     return deltaz
 
 
