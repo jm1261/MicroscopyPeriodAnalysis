@@ -93,19 +93,19 @@ if __name__ == '__main__':
         out_path=os.path.join(
             directory_path,
             '..',
-            'All_Period_Benchmark_Data.json'),
+            'All_design_Benchmark_Data.json'),
         dictionary=all_other_benchmarks)
     io.save_json_dicts(
         out_path=os.path.join(
             directory_path,
             '..',
-            'Best_Period_Benchmarks.json'),
+            'Best_design_Benchmarks.json'),
         dictionary=benchmark_dictionary)
     methods = []
     for key, values in benchmark_dictionary.items():
         methods.append(values[0])
-    negstd = methods.count('-StdDev')
-    posstd = methods.count('StdDev')
+    negstd = methods.count('Mean-StdDev')
+    posstd = methods.count('Mean+StdDev')
     mean = methods.count('Mean')
     nones = methods.count('None')
     print(negstd, posstd, mean, nones)

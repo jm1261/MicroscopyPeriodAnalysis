@@ -3,7 +3,7 @@ import src.GUI as gui
 import src.fileIO as io
 import src.filepaths as fp
 import src.analysis as anal
-
+'''Developments required: Plot the raw row vs threshold graphs for inspection'''
 
 if __name__ == '__main__':
 
@@ -47,16 +47,20 @@ if __name__ == '__main__':
 
         ''' Treshold Filters '''
         thresholds = [
-            'None', 'Mean', 'Mean-StdDev']
+            'None', 'Mean', 'Mean-StdDev', 'Mean+StdDev']
         for threshold in thresholds:
             grating_parameters = anal.calculate_grating_frequency(
                 grating=grating_region,
                 distance_per_pixel=distanceperpixel,
                 threshold=threshold,
                 save_figure=True,
-                figure_outpath=os.path.join(
-                    results_path,
-                    f'{filename}_{threshold}_Results.png'),
+                figure_outpath=[
+                    os.path.join(
+                        results_path,
+                        f'{filename}_{threshold}_Results.png'),
+                    os.path.join(
+                        results_path,
+                        f'{filename}_{threshold}_Rows.png')],
                 file_name=filename)
 
             ''' Results Out '''

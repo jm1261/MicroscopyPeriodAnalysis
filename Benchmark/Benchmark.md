@@ -18,7 +18,7 @@
 ## Benchmarking Thresholds
 
 * I produced a Fourier period analysis for each of the thresholding methods (and the None threshold method) to produce the results json files detailed in the software documentation.
-* I then used the benchmark_periods.py file to look at the given design periods and calculate which method gave us a period closest to the design parameters.
+* I then used the benchmark_designperiods.py file to look at the given design periods and calculate which method gave us a period closest to the design parameters.
 * Based purely on the grating period analysis, the mean - standard deviation threshold gave values closest to the expected value, while no threshold gave values farthest from expected values.
 * Comparing to measured values for period using built in software in the JEOL SEM software, the mean - standard deviation method also comes out on top.
 * It follows, therefore, that thresholding should be done to all data to ensure random variations caused by dust, excess material, or SEM imaging properties are removed to the best of our abilities.
