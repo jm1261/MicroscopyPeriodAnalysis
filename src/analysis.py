@@ -1,5 +1,7 @@
 import numpy as np
 import scipy.signal as sig
+
+from pathlib import Path
 from src.plotting import multi_xsys_plot, multiy_plot
 
 
@@ -11,7 +13,7 @@ def mean_array(x):
     Returns:
         mean: <float> mean value of x
     '''
-    return np.sum(x) / len(x)
+    return np.mean(x)
 
 
 def standard_deviation(x):
@@ -165,12 +167,12 @@ def row_fftsignalprocessing(frequency_coordinates,
     return frequencies, periods
 
 
-def calculate_grating_frequency(grating,
+def threshold_grating_frequency(grating,
                                 distance_per_pixel,
-                                threshold='None',
-                                save_figure=False,
-                                figure_outpath=False,
-                                file_name=False):
+                                threshold,
+                                sample_name,
+                                plot_files,
+                                out_path):
     '''
     Process grating frequency coordinates and periods, average and calculate the
     errors using standard error on the mean. Pull 10 rows and plot the fourier
@@ -183,11 +185,9 @@ def calculate_grating_frequency(grating,
                                     above mean will be 255, below 0
                             StdDev - a mean-stddev threshold will be applied,
                                     anything above will be 255, below 0
-        save_figure: <bool> if True, saves raw fourier transform (x10) for check
-        figure_outpath: <bool/string> if save_figure, figure_outpath is a
-                        directory path to save figure out
-        file_name: <bool/string> if save_figure, file_name is a name assigned
-                    to figure
+        sample_name: <string> sample name identifier string
+        plot_files: <string> "True" or "False"
+        out_path: <string> path to save figures if plot_files "True"
     Returns:
         results: <dictionary> dictionary containing average period, period
                 errors, average frequency coordinates, frequency errors from the
@@ -234,23 +234,110 @@ def calculate_grating_frequency(grating,
     frequency_errors = [standard_error_mean(
         x=f) for f in np.array(frequencies).T]
 
-    if save_figure:
+    if plot_files == 'True':
         multi_xsys_plot(
             xs=frequency_coordinates,
             ys=absolute_intensities,
             x_label='Frequency',
             y_label='Absolute Intensity',
-            title=file_name,
-            out_path=figure_outpath[0])
+            title='Fourier Transform',
+            out_path=Path(f'{out_path}_FFT.png'))
         multiy_plot(
             ys=rows,
             x_label='Pixels',
             y_label='Pixel Intensity',
-            title=file_name,
-            out_path=figure_outpath[1])
+            title='Row',
+            out_path=Path(f'{out_path}_Rows.png'))
 
     return {
-        'Average_Periods_nm': period_average,
-        'Period_Errors_nm': period_errors,
-        'Average_Frequencies': frequency_average,
-        'Frequencies_Errors': frequency_errors}
+        f'{sample_name} Threshold Method': threshold,
+        f'{sample_name} Average Periods': period_average,
+        f'{sample_name} Period Errors': period_errors,
+        f'{sample_name} Average Frequencies': frequency_average,
+        f'{sample_name} Frequencies Errors': frequency_errors}
+
+
+def calculate_grating_frequency(grating_region,
+                                distance_per_pixel,
+                                sample_name,
+                                design_period,
+                                plot_files,
+                                out_path):
+    '''
+    Calculate grating frequency and optimise thresholding for rough images, only
+    return thresholded data with minimum difference to design period. Catches
+    errors in SEM imaging, scum, or dirt on the grating surface.
+    Args:
+        grating_region: <array> pixel array of grating region/analysis region
+        distance_per_pixel: <float> distance in um per pixel
+        sample_name: <string> sample name identifier string
+        design_period: <int> design period for grating
+        plot_files: <string> "True" or "False"
+        out_path: <string> path to save figures if plot_files "True"
+    Returns:
+        results: <dictionary> dictionary containing average period, period
+                errors, average frequency coordinates, frequency errors from the
+                fourier transform calculation
+    '''
+    thresholding_methods = ['Mean', 'Mean-StdDev', 'Mean+StdDev', 'None']
+    grating_periods = []
+    grating_results = []
+    for threshold in thresholding_methods:
+        grating_parameters = threshold_grating_frequency(
+            grating=grating_region,
+            distance_per_pixel=distance_per_pixel,
+            sample_name=sample_name,
+            threshold=threshold,
+            plot_files=plot_files,
+            out_path=out_path)
+        grating_periods.append(
+            max(grating_parameters[f'{sample_name} Average Periods']))
+        grating_results.append(grating_parameters)
+    minimum_difference = [
+        np.abs(design_period - period)
+        for period in grating_periods]
+    minimum_index = np.argmin(minimum_difference)
+    grating_dictionary = grating_results[minimum_index]
+    periods = grating_dictionary[f'{sample_name} Average Periods']
+    errors = grating_dictionary[f'{sample_name} Period Errors']
+    period_error = errors[
+        np.argmin(
+            [period - max(periods)
+            for period in periods])]
+    grating_period = {
+        f'{sample_name} Grating Period': max(periods),
+        f'{sample_name} Period Error': period_error}
+    results_dictionary = dict(
+        grating_dictionary,
+        **grating_period)
+    return results_dictionary
+
+
+def average_grating_period(period_dictionary):
+    '''
+    Average period values in array in dictionary.
+    Args:
+        period_dictionary: <dict> period values for various file keys
+    Returns:
+        results_dictionary: <dict> average results for specific gratings
+    '''
+    average_dictionary = {}
+    for key, value in period_dictionary.items():
+        key_split = key.split('_')
+        new_key = key_split[0]
+        if new_key in average_dictionary.keys():
+            average_dictionary[new_key].append(value)
+        else:
+            average_dictionary.update({new_key: [value]})
+    results_dictionary = {}
+    for key, values in average_dictionary.items():
+        period_key = f'{key} Average'
+        error_key = f'{key} Error'
+        if len(values) != 1:
+            results_dictionary.update(
+                {period_key: mean_array(x=values)})
+            results_dictionary.update(
+                {error_key: standard_error_mean(x=values)})
+        else:
+            results_dictionary.update({period_key: 'No Average Value'})
+    return results_dictionary

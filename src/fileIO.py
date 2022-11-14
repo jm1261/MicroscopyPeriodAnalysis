@@ -3,6 +3,18 @@ import numpy as np
 from PIL import Image
 
 
+def load_json(file_path):
+    '''
+    Extract user variables from json dictionary.
+    Args:
+        file_path: <string> path to file
+    Returns:
+        dictionary: <dict> use variables dictionary
+    '''
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+
 def remove_unwanted(all_lines,
                     unwanted_character):
     '''
