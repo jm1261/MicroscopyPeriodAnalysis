@@ -129,10 +129,5 @@ dmypy.json
 .pyre/
 
 # ignore results
-*.config
-*.csv
-*.json
-<<<<<<< HEAD
-*.png
-=======
->>>>>>> bd3e02fe8cec71b94bf0770b9f64eb42da57e640
+Results/
+SEM/
