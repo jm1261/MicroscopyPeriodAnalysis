@@ -23,32 +23,36 @@ def multi_xsys_plot(xs,
     '''
     fig, ax = plt.subplots(
         1,
-        figsize=[10, 7])
-    for x, y in zip(xs, ys):
-        ax.plot(x, y, lw=2)
+        figsize=[round(7.5 * 0.393701, 2), round(9 * 0.393701, 2)],
+        dpi=600)
+    #for x, y in zip(xs, ys):
+    #    ax.plot(x, y, lw=2)
+    ax.plot(xs[0], ys[0], lw=1)
     ax.grid(True)
     ax.set_xlabel(
         x_label,
-        fontsize=14,
+        fontsize=15,
         fontweight='bold',
         color='black')
     ax.set_ylabel(
         y_label,
-        fontsize=14,
+        fontsize=15,
         fontweight='bold',
         color='black')
-    ax.set_title(
-        title,
-        fontsize=18,
-        fontweight='bold',
-        color='black')
+    #ax.set_title(
+    #    title,
+    #    fontsize=18,
+    #    fontweight='bold',
+    #    color='black')
     ax.tick_params(
         axis='both',
         colors='black',
-        labelsize=14)
+        labelsize=10)
+    ax.set_xlim(0, 0.1)
+    ax.set_ylim(0, 50000)
     if show:
         plt.show()
-    plt.savefig(out_path)
+    plt.savefig(out_path, bbox_inches='tight')
     fig.clf()
     plt.cla()
     plt.close(fig)
@@ -74,32 +78,34 @@ def multiy_plot(ys,
     '''
     fig, ax = plt.subplots(
         1,
-        figsize=[10, 7])
-    for y in ys:
-        ax.plot(y, lw=2)
+        figsize=[round(7.5 * 0.393701, 2), round(9 * 0.393701, 2)],
+        dpi=600)
+    #for y in ys:
+    #    ax.plot(y, lw=2)
+    ax.plot(ys[0], lw=1)
     ax.grid(True)
     ax.set_xlabel(
         x_label,
-        fontsize=14,
+        fontsize=15,
         fontweight='bold',
         color='black')
     ax.set_ylabel(
         y_label,
-        fontsize=14,
+        fontsize=15,
         fontweight='bold',
         color='black')
-    ax.set_title(
-        title,
-        fontsize=18,
-        fontweight='bold',
-        color='black')
+    #ax.set_title(
+    #    title,
+    #    fontsize=18,
+    #    fontweight='bold',
+    #    color='black')
     ax.tick_params(
         axis='both',
         colors='black',
-        labelsize=14)
+        labelsize=10)
     if show:
         plt.show()
-    plt.savefig(out_path)
+    plt.savefig(out_path, bbox_inches='tight')
     fig.clf()
     plt.cla()
     plt.close(fig)

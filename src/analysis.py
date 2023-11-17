@@ -238,14 +238,14 @@ def threshold_grating_frequency(grating,
         multi_xsys_plot(
             xs=frequency_coordinates,
             ys=absolute_intensities,
-            x_label='Frequency',
-            y_label='Absolute Intensity',
+            x_label='Frequency [1/p]',
+            y_label='Absolute Intensity [au]',
             title='Fourier Transform',
             out_path=Path(f'{out_path}_FFT.png'))
         multiy_plot(
             ys=rows,
-            x_label='Pixels',
-            y_label='Pixel Intensity',
+            x_label='Pixels [p]',
+            y_label='Pixel Intensity [au]',
             title='Row',
             out_path=Path(f'{out_path}_Rows.png'))
 
